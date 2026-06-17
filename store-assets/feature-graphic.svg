@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500" viewBox="0 0 1024 500">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1a237e"/>
+      <stop offset="1" stop-color="#0d1442"/>
+    </linearGradient>
+    <linearGradient id="red"    x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff5252"/><stop offset="1" stop-color="#c62828"/></linearGradient>
+    <linearGradient id="yellow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffee58"/><stop offset="1" stop-color="#f9a825"/></linearGradient>
+    <linearGradient id="green"  x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#69f0ae"/><stop offset="1" stop-color="#00c853"/></linearGradient>
+    <linearGradient id="blue"   x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#40c4ff"/><stop offset="1" stop-color="#0277bd"/></linearGradient>
+    <linearGradient id="purple" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ce93d8"/><stop offset="1" stop-color="#7b1fa2"/></linearGradient>
+
+    <!-- Per-bottle clip paths, keyed to where each <g transform> places them. -->
+    <clipPath id="clip1"><path d="M 638,118 L 638,142 Q 638,148 622,158 L 622,272 Q 622,300 660,300 L 678,300 Q 716,300 716,272 L 716,158 Q 716,148 700,142 L 700,118 Z"/></clipPath>
+    <clipPath id="clip2"><path d="M 778,118 L 778,142 Q 778,148 762,158 L 762,272 Q 762,300 800,300 L 818,300 Q 856,300 856,272 L 856,158 Q 856,148 840,142 L 840,118 Z"/></clipPath>
+    <clipPath id="clip3"><path d="M 918,118 L 918,142 Q 918,148 902,158 L 902,272 Q 902,300 940,300 L 958,300 Q 996,300 996,272 L 996,158 Q 996,148 980,142 L 980,118 Z"/></clipPath>
+  </defs>
+
+  <rect width="1024" height="500" fill="url(#bg)"/>
+
+  <!-- twinkles -->
+  <g fill="#ffffff" opacity="0.5">
+    <circle cx="60" cy="70" r="3"/>
+    <circle cx="180" cy="40" r="2"/>
+    <circle cx="450" cy="50" r="2"/>
+    <circle cx="40" cy="430" r="3"/>
+    <circle cx="380" cy="460" r="2"/>
+    <circle cx="980" cy="60" r="3"/>
+    <circle cx="600" cy="450" r="2"/>
+  </g>
+
+  <!-- Title block -->
+  <g font-family="-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif">
+    <text x="50" y="160" font-size="60" font-weight="800" fill="#ffffff">Bottle of Colors</text>
+    <text x="50" y="216" font-size="26" font-weight="600" fill="#ffd54f">Pour. Sort. Solve.</text>
+    <text x="50" y="290" font-size="20" font-weight="400" fill="#e0e0e0">100 levels · custom puzzles · multiple players</text>
+    <text x="50" y="320" font-size="20" font-weight="400" fill="#e0e0e0">Cap + sparkle when you fully sort a flask!</text>
+  </g>
+
+  <!-- BOTTLE 1: solved single color with cork -->
+  <g clip-path="url(#clip1)">
+    <rect x="622" y="158" width="94" height="142" fill="url(#red)"/>
+    <rect x="630" y="170" width="6" height="120" rx="3" fill="#ffffff" opacity="0.30"/>
+  </g>
+  <path d="M 638,118 L 638,142 Q 638,148 622,158 L 622,272 Q 622,300 660,300 L 678,300 Q 716,300 716,272 L 716,158 Q 716,148 700,142 L 700,118 Z"
+        fill="none" stroke="#ffffff" stroke-width="5" stroke-linejoin="round"/>
+  <!-- cork -->
+  <rect x="638" y="100" width="62" height="14" rx="4" fill="url(#red)" stroke="#ffffff" stroke-width="2"/>
+
+  <!-- BOTTLE 2: mixed liquids -->
+  <g clip-path="url(#clip2)">
+    <rect x="762" y="160" width="94" height="35" fill="url(#blue)"/>
+    <rect x="762" y="195" width="94" height="35" fill="url(#yellow)"/>
+    <rect x="762" y="230" width="94" height="35" fill="url(#green)"/>
+    <rect x="762" y="265" width="94" height="35" fill="url(#purple)"/>
+    <rect x="770" y="170" width="6" height="120" rx="3" fill="#ffffff" opacity="0.30"/>
+  </g>
+  <path d="M 778,118 L 778,142 Q 778,148 762,158 L 762,272 Q 762,300 800,300 L 818,300 Q 856,300 856,272 L 856,158 Q 856,148 840,142 L 840,118 Z"
+        fill="none" stroke="#ffffff" stroke-width="5" stroke-linejoin="round"/>
+  <rect x="772" y="108" width="62" height="6" rx="2" fill="#ffffff" opacity="0.85"/>
+
+  <!-- BOTTLE 3: half full of red, empty top half -->
+  <g clip-path="url(#clip3)">
+    <rect x="902" y="220" width="94" height="80" fill="url(#red)"/>
+    <rect x="910" y="230" width="6" height="60" rx="3" fill="#ffffff" opacity="0.30"/>
+  </g>
+  <path d="M 918,118 L 918,142 Q 918,148 902,158 L 902,272 Q 902,300 940,300 L 958,300 Q 996,300 996,272 L 996,158 Q 996,148 980,142 L 980,118 Z"
+        fill="none" stroke="#ffffff" stroke-width="5" stroke-linejoin="round"/>
+  <rect x="912" y="108" width="62" height="6" rx="2" fill="#ffffff" opacity="0.85"/>
+
+  <!-- sparkles around bottle 1 (just solved) -->
+  <g fill="#ffeb3b">
+    <polygon points="600,160 605,172 617,175 605,178 600,190 595,178 583,175 595,172"/>
+    <polygon points="725,250 729,259 738,261 729,263 725,272 721,263 712,261 721,259"/>
+    <polygon points="612,260 615,267 622,268 615,270 612,277 609,270 602,268 609,267"/>
+  </g>
+</svg>

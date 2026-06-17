@@ -1,0 +1,63 @@
+Bottle of Colors is a calm, satisfying water-sort puzzle. Each flask holds a stack of brightly colored liquids. Tap a source flask, then a destination flask to pour — but only if the destination is empty or its top color matches the source. Sort every flask into a single pure color, and you win.
+
+Simple to learn, surprisingly deep to master. Perfect for short breaks, long commutes, or unwinding before sleep.
+
+WHAT'S INSIDE
+
+• 100 hand-tuned levels with a smooth difficulty curve
+   - Start with 4 bottles and 4 slots
+   - Work your way up to 12 bottles, 7 slots, 10 colors
+   - Each level uses a fixed layout, so you can compare moves with friends
+
+• Multiple player profiles
+   - Pass the phone between family members
+   - Each player has their own saved progress
+   - Big "Play" button on the home screen jumps you straight to your next unsolved level
+   - "Change player" anytime from the home screen
+
+• Smart undo
+   - Every 10 moves you earn 1 undo
+   - Hold up to 3 undos at once
+   - Stuck? Use one to back out and try a different approach
+
+• Unsolvable detection
+   - If no valid moves remain, the game tells you immediately
+   - Offers Undo, Reset, or Back so you never get silently stuck
+
+• Custom puzzles
+   - Dial in your own difficulty: 3-12 bottles, 2-8 slots per bottle, 1-3 empty bottles
+   - New random layout every time
+   - Great for warming up or chasing a specific challenge
+
+• Polished feel
+   - High-contrast 10-color palette designed so adjacent liquids are easy to tell apart
+   - Smooth pour animations: the source bottle tilts, colors fade out at the top and fade in at the destination
+   - Cork cap pops onto a flask the moment it's fully sorted
+   - Sparkle burst celebrates every solved bottle
+   - Subtle haptic feedback on every tap, pour, and win
+
+• Built to fit your screen
+   - The board automatically scales to fit every flask in view
+   - No scrolling, no zooming — works on small phones and tablets
+
+DESIGNED FOR FOCUS
+
+No ads. No pop-ups. No timers, lives, or stars to chase. No social pressure. Just you, the flasks, and your next move. Take your time, undo when you need to, and enjoy a moment of calm sorting.
+
+HOW TO PLAY
+
+1. Tap a flask to pick it as the source — it lifts up and gets an amber outline.
+2. Tap a second flask to pour into it.
+3. A pour is valid if the destination is empty, or its top color matches the source's top color.
+4. All contiguous units of the source's top color transfer at once, as long as the destination has room.
+5. Solve every flask: each one must be either empty, or completely full of a single color.
+
+That's it. Whether you finish a level in 6 moves or 60, the puzzle is the same. The only score that matters is the satisfying click of the cork popping into place.
+
+Licence
+
+It is under GPL v3.0 licence without any waranty (see LICENCE file). source code avaliable from https://github.com/sadeq-n-yazdi/bottles-of-colours
+
+Made with ❤ for puzzle lovers everywhere.
+
+uk.sadeq.bottleofcolors
