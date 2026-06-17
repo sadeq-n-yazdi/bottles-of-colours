@@ -52,7 +52,7 @@ Because the App collects no data whatsoever, it is safe for users of all ages, i
 
 The App's source code is publicly available and licensed under the **GNU General Public License v3.0**. You are free to inspect, modify, and redistribute the source code under the terms of that licence. The source code is the ultimate proof of what the App does and does not do.
 
-You can review the full source code at: *[https://github.com/sadeq-n-yazdi/bottles-of-colours](GitHub sadeq-n-yazdi/bottles-of-colours/)*
+You can review the full source code at: :octocat: *[GitHub repository](https://github.com/sadeq-n-yazdi/bottles-of-colours/)*
 
 ---
 
@@ -68,8 +68,8 @@ Given the nature of the App, meaningful changes to this policy are unlikely.
 
 If you have any questions about this privacy policy or the App, you can reach the developer at:
 
-- [https://github.com/sadeq-n-yazdi/bottles-of-colours/issues](GitHub issues)
-- send email to me `issue@sadeq.uk`
+- :octocat: [GitHub issues](https://github.com/sadeq-n-yazdi/bottles-of-colours/issues)
+- :email: send email to me `issue@sadeq.uk`
 
 ---
 
