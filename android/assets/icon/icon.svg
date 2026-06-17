@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a237e"/>
+      <stop offset="1" stop-color="#0d1442"/>
+    </linearGradient>
+    <linearGradient id="red"    x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff5252"/><stop offset="1" stop-color="#c62828"/></linearGradient>
+    <linearGradient id="yellow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffee58"/><stop offset="1" stop-color="#f9a825"/></linearGradient>
+    <linearGradient id="green"  x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#69f0ae"/><stop offset="1" stop-color="#00c853"/></linearGradient>
+    <linearGradient id="blue"   x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#40c4ff"/><stop offset="1" stop-color="#0277bd"/></linearGradient>
+    <linearGradient id="purple" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ce93d8"/><stop offset="1" stop-color="#7b1fa2"/></linearGradient>
+
+    <!--
+      Flask shape used by both bottles (origin = center of neck top).
+      Width 180, neck h 60, shoulder h 50, body h 380, bottom radius 80.
+    -->
+    <clipPath id="flaskClipL" clipPathUnits="userSpaceOnUse">
+      <path d="M -55,0 L -55,60 Q -55,75 -90,110 L -90,410 Q -90,490 -10,490 L 10,490 Q 90,490 90,410 L 90,110 Q 90,75 55,60 L 55,0 Z"/>
+    </clipPath>
+    <clipPath id="flaskClipR" clipPathUnits="userSpaceOnUse">
+      <path d="M -55,0 L -55,60 Q -55,75 -90,110 L -90,410 Q -90,490 -10,490 L 10,490 Q 90,490 90,410 L 90,110 Q 90,75 55,60 L 55,0 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- rounded square background -->
+  <rect x="0" y="0" width="1024" height="1024" rx="180" ry="180" fill="url(#bg)"/>
+
+  <!-- decorative twinkles -->
+  <g fill="#ffffff" opacity="0.55">
+    <circle cx="160" cy="180" r="6"/>
+    <circle cx="900" cy="180" r="5"/>
+    <circle cx="120" cy="520" r="4"/>
+    <circle cx="940" cy="640" r="5"/>
+    <circle cx="200" cy="900" r="5"/>
+    <circle cx="870" cy="900" r="4"/>
+  </g>
+
+  <!-- ============ LEFT FLASK (tilted, pouring) ============ -->
+  <!-- Pivot at (380, 320): center of left flask's neck top.
+       Rotate +55deg so its right lip points toward the right flask. -->
+  <g transform="translate(380 320) rotate(55)">
+    <!-- liquid stack -->
+    <g clip-path="url(#flaskClipL)">
+      <rect x="-90" y="110" width="180" height="80" fill="url(#purple)"/>
+      <rect x="-90" y="190" width="180" height="80" fill="url(#green)"/>
+      <rect x="-90" y="270" width="180" height="80" fill="url(#yellow)"/>
+      <rect x="-90" y="350" width="180" height="140" fill="url(#red)"/>
+      <!-- left-edge shine -->
+      <rect x="-82" y="120" width="14" height="350" rx="7" fill="#ffffff" opacity="0.30"/>
+    </g>
+    <!-- outline -->
+    <path d="M -55,0 L -55,60 Q -55,75 -90,110 L -90,410 Q -90,490 -10,490 L 10,490 Q 90,490 90,410 L 90,110 Q 90,75 55,60 L 55,0 Z"
+          fill="none" stroke="#ffffff" stroke-width="14" stroke-linejoin="round"/>
+    <!-- rim -->
+    <rect x="-58" y="-14" width="116" height="14" rx="4" fill="#ffffff" opacity="0.85"/>
+  </g>
+
+  <!-- ============ POUR STREAM ============ -->
+  <!-- From left flask's right lip (~ (612, 365)) to right flask's neck (~ (680, 470)). -->
+  <path d="M 612 360 Q 650 410, 680 480"
+        fill="none" stroke="#ff5252" stroke-width="40" stroke-linecap="round"/>
+  <path d="M 612 360 Q 650 410, 680 480"
+        fill="none" stroke="#ff8a80" stroke-width="14" stroke-linecap="round" opacity="0.9"/>
+  <!-- splashing droplets in destination -->
+  <circle cx="640" cy="430" r="10" fill="#ff5252"/>
+  <circle cx="700" cy="460" r="8"  fill="#ff8a80"/>
+  <circle cx="660" cy="470" r="6"  fill="#ffcdd2"/>
+
+  <!-- ============ RIGHT FLASK (upright, receiving) ============ -->
+  <g transform="translate(680 470)">
+    <g clip-path="url(#flaskClipR)">
+      <rect x="-90" y="200" width="180" height="80" fill="url(#blue)"/>
+      <rect x="-90" y="280" width="180" height="210" fill="url(#red)"/>
+      <rect x="-82" y="120" width="14" height="350" rx="7" fill="#ffffff" opacity="0.30"/>
+    </g>
+    <path d="M -55,0 L -55,60 Q -55,75 -90,110 L -90,410 Q -90,490 -10,490 L 10,490 Q 90,490 90,410 L 90,110 Q 90,75 55,60 L 55,0 Z"
+          fill="none" stroke="#ffffff" stroke-width="14" stroke-linejoin="round"/>
+    <rect x="-58" y="-14" width="116" height="14" rx="4" fill="#ffffff" opacity="0.85"/>
+  </g>
+
+  <!-- inner shadow ring -->
+  <rect x="0" y="0" width="1024" height="1024" rx="180" ry="180"
+        fill="none" stroke="#000000" stroke-opacity="0.25" stroke-width="6"/>
+</svg>
