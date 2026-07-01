@@ -148,9 +148,15 @@ void main() {
 
     test('useHint suggests a valid pour and consumes one hint', () {
       final g = GameState(totalBottles: 5, seed: 1);
-      // A clean, obvious consolidation: red-topped source onto red-topped dst.
-      g.bottles[0] = Bottle(const [Colors.blue, Colors.red], capacity: 5);
-      g.bottles[1] = Bottle(const [Colors.red], capacity: 5);
+      // A solvable, one-move-from-win board: consolidate red onto red.
+      g.bottles = [
+        Bottle(const [Colors.red, Colors.red, Colors.red, Colors.red],
+            capacity: 5),
+        Bottle(const [Colors.red], capacity: 5),
+        Bottle(List<Color>.filled(5, Colors.blue), capacity: 5),
+        Bottle(List<Color>.filled(5, Colors.green), capacity: 5),
+        Bottle.empty(capacity: 5),
+      ];
       final err = g.useHint();
       expect(err, isNull);
       expect(g.hintSrc, 0);
@@ -177,13 +183,54 @@ void main() {
 
     test('a tap clears a pending hint highlight', () {
       final g = GameState(totalBottles: 5, seed: 1);
-      g.bottles[0] = Bottle(const [Colors.blue, Colors.red], capacity: 5);
-      g.bottles[1] = Bottle(const [Colors.red], capacity: 5);
+      g.bottles = [
+        Bottle(const [Colors.red, Colors.red, Colors.red, Colors.red],
+            capacity: 5),
+        Bottle(const [Colors.red], capacity: 5),
+        Bottle(List<Color>.filled(5, Colors.blue), capacity: 5),
+        Bottle(List<Color>.filled(5, Colors.green), capacity: 5),
+        Bottle.empty(capacity: 5),
+      ];
       g.useHint();
       expect(g.hintSrc, isNotNull);
       g.tapBottle(0); // select bottle 0
       expect(g.hintSrc, isNull);
       expect(g.hintDst, isNull);
+    });
+
+    test('not stuck while the puzzle is still solvable', () {
+      final g = GameState(totalBottles: 5, seed: 1);
+      // One legal move from a win — clearly solvable.
+      g.bottles = [
+        Bottle(const [Colors.red, Colors.red, Colors.red, Colors.red],
+            capacity: 5),
+        Bottle(const [Colors.red], capacity: 5),
+        Bottle(List<Color>.filled(5, Colors.blue), capacity: 5),
+        Bottle(List<Color>.filled(5, Colors.green), capacity: 5),
+        Bottle.empty(capacity: 5),
+      ];
+      expect(g.isWon, false);
+      expect(g.isStuck, false);
+    });
+
+    test('reports stuck when moves remain but the puzzle is unsolvable', () {
+      final g = GameState(totalBottles: 4, emptyBottles: 1, seed: 1);
+      // Four reds can never fill 3-slot bottles evenly, so no sequence of
+      // pours ever sorts this board — yet legal pours still exist (bottle 1
+      // onto bottle 2, or into the empty bottle 3). The old "any legal pour
+      // means not stuck" check missed this; solvability search catches it.
+      g.bottles = [
+        Bottle(List<Color>.filled(3, Colors.red), capacity: 3), // solved
+        Bottle(const [Colors.red, Colors.blue], capacity: 3),
+        Bottle(const [Colors.blue], capacity: 3),
+        Bottle.empty(capacity: 3),
+      ];
+      expect(g.isWon, false);
+      // A legal move genuinely exists: pour blue (bottle 1) onto blue (2).
+      g.tapBottle(1);
+      expect(g.tapBottle(2), isNull);
+      // ...but the position remains unwinnable, so it is correctly stuck.
+      expect(g.isStuck, true);
     });
   });
 }

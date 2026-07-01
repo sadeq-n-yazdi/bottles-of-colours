@@ -39,6 +39,12 @@ const int kMovesPerHint = 5;
 /// Cap on how many hints can be held at once (mirrors [kMaxUndosHeld]).
 const int kMaxHintsHeld = 3;
 
+/// Upper bound on distinct positions the solvability search will explore
+/// before giving up. Puzzles at these sizes settle well under this; the cap
+/// only guards against a pathological blow-up, and on hitting it we assume
+/// "solvable" so we never falsely tell the player they are stuck.
+const int kMaxSolverStates = 200000;
+
 /// Hard cap on bottle count: tied to palette size + a couple of empties.
 const int kMaxBottles = 12;
 
@@ -89,21 +95,94 @@ class GameState extends ChangeNotifier {
   int? hintDst;
   Timer? _hintTimer;
 
+  // Memoized solvability of the current board. Cleared on every board
+  // mutation (_doPour / undo / _generate). null means "not computed yet" —
+  // it is recomputed lazily so repeated widget builds within one position
+  // reuse the result instead of re-running the search.
+  bool? _solvable;
+
   bool get isWon => bottles.every((b) => b.isSolved);
 
-  /// True when no valid pour exists from any bottle to any other bottle.
-  /// Reported alongside [isWon] so we don't claim "stuck" on a solved board.
+  /// True when the puzzle can no longer be won from the current position.
+  ///
+  /// This is stronger than "no legal pour exists": a board can still offer
+  /// legal moves that only shuffle liquid between bottles in a loop without
+  /// ever sorting it. Such a dead position used to read as "not stuck" (a
+  /// false negative) because a move was technically available. We now decide
+  /// it by an exhaustive search over every reachable position — if none of
+  /// them is a win, the puzzle is unsolvable and we report it as stuck.
+  ///
+  /// Reported alongside [isWon] so we never claim "stuck" on a solved board.
   bool get isStuck {
     if (isWon) return false;
-    for (int i = 0; i < bottles.length; i++) {
-      final src = bottles[i];
-      if (src.isEmpty) continue;
-      for (int j = 0; j < bottles.length; j++) {
-        if (i == j) continue;
-        if (_validatePour(src, bottles[j]) == null) return false;
+    return !(_solvable ??= _searchSolvable());
+  }
+
+  /// Depth-first search over reachable positions to decide whether any move
+  /// sequence reaches a win. A visited set (keyed on a canonical, order- and
+  /// permutation-independent encoding of the bottles) collapses move loops and
+  /// symmetric arrangements, so the search terminates. Returns true as soon as
+  /// a solved position is reachable; false only after the whole reachable
+  /// space is exhausted; and true (conservatively) if [kMaxSolverStates] is
+  /// hit first, so we never report a false "stuck".
+  bool _searchSolvable() {
+    // Map each color present to a small id so positions encode compactly.
+    // No pour ever introduces a new color, so ids built from the start
+    // position cover every reachable position.
+    final colorId = <Color, int>{};
+    for (final b in bottles) {
+      for (final c in b.units) {
+        colorId.putIfAbsent(c, () => colorId.length);
       }
     }
-    return true;
+
+    String canonical(List<Bottle> state) {
+      final parts = <String>[
+        for (final b in state)
+          String.fromCharCodes(<int>[for (final c in b.units) colorId[c]!]),
+      ];
+      parts.sort();
+      return parts.join(',');
+    }
+
+    final start = _cloneBottles(bottles);
+    final visited = <String>{canonical(start)};
+    final stack = <List<Bottle>>[start];
+    int budget = kMaxSolverStates;
+
+    while (stack.isNotEmpty) {
+      final state = stack.removeLast();
+      for (int i = 0; i < state.length; i++) {
+        final src = state[i];
+        if (src.isEmpty || src.isSolved) continue; // never pour a finished src
+        for (int j = 0; j < state.length; j++) {
+          if (i == j) continue;
+          if (_validatePour(src, state[j]) != null) continue;
+          final next = _cloneBottles(state);
+          _applyPour(next, i, j);
+          if (next.every((b) => b.isSolved)) return true;
+          if (visited.add(canonical(next))) {
+            if (--budget <= 0) return true; // too large: assume solvable
+            stack.add(next);
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  List<Bottle> _cloneBottles(List<Bottle> state) =>
+      <Bottle>[for (final b in state) Bottle(b.units, capacity: b.capacity)];
+
+  void _applyPour(List<Bottle> state, int srcIdx, int dstIdx) {
+    final src = state[srcIdx];
+    final dst = state[dstIdx];
+    final n = min(src.topRunLength, dst.freeSpace);
+    final color = src.topColor!;
+    for (int i = 0; i < n; i++) {
+      src.units.removeLast();
+      dst.units.add(color);
+    }
   }
 
   int get availableUndos {
@@ -154,6 +233,7 @@ class GameState extends ChangeNotifier {
     hintSrc = null;
     hintDst = null;
     _hintTimer?.cancel();
+    _solvable = null;
   }
 
   void reset() {
@@ -216,6 +296,7 @@ class GameState extends ChangeNotifier {
     hintSrc = null;
     hintDst = null;
     _hintTimer?.cancel();
+    _solvable = null; // board changed; recompute stuck-ness lazily
     notifyListeners();
   }
 
@@ -291,14 +372,8 @@ class GameState extends ChangeNotifier {
   }
 
   void _doPour(int srcIdx, int dstIdx) {
-    final src = bottles[srcIdx];
-    final dst = bottles[dstIdx];
-    final n = min(src.topRunLength, dst.freeSpace);
-    final color = src.topColor!;
-    for (int i = 0; i < n; i++) {
-      src.units.removeLast();
-      dst.units.add(color);
-    }
+    _applyPour(bottles, srcIdx, dstIdx);
+    _solvable = null; // board changed; recompute stuck-ness lazily
   }
 
   void _pushHistory() {
