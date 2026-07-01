@@ -100,6 +100,23 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
+  void _hint() {
+    final err = _state.useHint();
+    if (err != null) {
+      // No hint given (won / stuck / none left): same "no" feedback as a
+      // rejected pour.
+      HapticFeedback.lightImpact();
+      ScaffoldMessenger.of(context)
+        ..clearSnackBars()
+        ..showSnackBar(SnackBar(
+          content: Text(err),
+          duration: const Duration(milliseconds: 900),
+        ));
+    } else {
+      HapticFeedback.selectionClick();
+    }
+  }
+
   String get _title {
     if (widget.title != null) return widget.title!;
     if (widget.level != null) return 'Level ${widget.level!.number}';
@@ -204,6 +221,11 @@ class _GameScreenState extends State<GameScreen> {
       appBar: AppBar(
         title: Text(_title),
         actions: <Widget>[
+          _HintButton(
+            available: _state.availableHints,
+            enabled: _state.canHint,
+            onPressed: _hint,
+          ),
           _UndoButton(
             available: _state.availableUndos,
             enabled: _state.canUndo,
@@ -253,8 +275,10 @@ class _GameScreenState extends State<GameScreen> {
                           fit: BoxFit.contain,
                           child: BottleWidget(
                             bottle: _state.bottles[i],
-                            selected: _state.selectedIndex == i,
-                            pouring: _state.lastPourSrc == i,
+                            selected: _state.selectedIndex == i ||
+                                _state.hintDst == i,
+                            pouring: _state.lastPourSrc == i ||
+                                _state.hintSrc == i,
                             onTap: () => _handleTap(i),
                           ),
                         ),
@@ -271,7 +295,8 @@ class _GameScreenState extends State<GameScreen> {
           padding: const EdgeInsets.all(8),
           child: Text(
             'Moves: ${_state.moves}     '
-            'Undos: ${_state.availableUndos}/$kMaxUndosHeld',
+            'Undos: ${_state.availableUndos}/$kMaxUndosHeld     '
+            'Hints: ${_state.availableHints}/$kMaxHintsHeld',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.titleMedium,
           ),
@@ -342,25 +367,82 @@ class _UndoButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
+    return _BadgeIconButton(
+      icon: Icons.undo,
+      badge: '$available',
+      badgeColor: Colors.amber,
+      enabled: enabled,
       tooltip: 'Undo (1 earned per $kMovesPerUndo moves, '
           'max $kMaxUndosHeld held)',
+      onPressed: onPressed,
+    );
+  }
+}
+
+class _HintButton extends StatelessWidget {
+  const _HintButton({
+    required this.available,
+    required this.enabled,
+    required this.onPressed,
+  });
+
+  final int available;
+  final bool enabled;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return _BadgeIconButton(
+      icon: Icons.lightbulb_outline,
+      badge: '$available',
+      badgeColor: Colors.lightBlueAccent,
+      enabled: enabled,
+      tooltip: 'Hint (start with $kFreeHints, +1 per $kMovesPerHint moves, '
+          'max $kMaxHintsHeld held)',
+      onPressed: onPressed,
+    );
+  }
+}
+
+/// An [IconButton] with a small count badge in the top-right corner. Shared by
+/// the undo and hint buttons so their look stays in sync.
+class _BadgeIconButton extends StatelessWidget {
+  const _BadgeIconButton({
+    required this.icon,
+    required this.badge,
+    required this.badgeColor,
+    required this.enabled,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String badge;
+  final Color badgeColor;
+  final bool enabled;
+  final String tooltip;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: tooltip,
       onPressed: enabled ? onPressed : null,
       icon: Stack(
         clipBehavior: Clip.none,
         children: <Widget>[
-          const Icon(Icons.undo),
+          Icon(icon),
           Positioned(
             right: -6,
             top: -4,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
               decoration: BoxDecoration(
-                color: enabled ? Colors.amber : Colors.grey,
+                color: enabled ? badgeColor : Colors.grey,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                '$available',
+                badge,
                 style: const TextStyle(
                   color: Colors.black,
                   fontSize: 10,

@@ -25,10 +25,19 @@ const List<Color> kPalette = <Color>[
 int get kMaxColors => kPalette.length;
 
 /// Earned 1 undo per this many moves.
-const int kMovesPerUndo = 10;
+const int kMovesPerUndo = 3;
 
 /// Cap on how many undos can be held at once.
 const int kMaxUndosHeld = 3;
+
+/// Hints available before the first move is made.
+const int kFreeHints = 1;
+
+/// Earned 1 additional hint per this many moves.
+const int kMovesPerHint = 5;
+
+/// Cap on how many hints can be held at once (mirrors [kMaxUndosHeld]).
+const int kMaxHintsHeld = 3;
 
 /// Hard cap on bottle count: tied to palette size + a couple of empties.
 const int kMaxBottles = 12;
@@ -64,6 +73,7 @@ class GameState extends ChangeNotifier {
   int? selectedIndex;
   int moves = 0;
   int undosUsed = 0;
+  int hintsUsed = 0;
 
   final List<List<List<Color>>> _history = <List<List<Color>>>[];
   static const int _historyCap = 12;
@@ -71,6 +81,13 @@ class GameState extends ChangeNotifier {
   int? lastPourSrc;
   int? lastPourDst;
   Timer? _pourTimer;
+
+  // A hint highlights a suggested source/destination pair without pouring.
+  // Kept separate from lastPour* because a hint lingers longer and means
+  // "you could pour here", not "a pour just happened".
+  int? hintSrc;
+  int? hintDst;
+  Timer? _hintTimer;
 
   bool get isWon => bottles.every((b) => b.isSolved);
 
@@ -98,6 +115,15 @@ class GameState extends ChangeNotifier {
 
   bool get canUndo => availableUndos > 0 && _history.isNotEmpty;
 
+  int get availableHints {
+    final earned = kFreeHints + moves ~/ kMovesPerHint;
+    final remaining = earned - hintsUsed;
+    if (remaining <= 0) return 0;
+    return remaining > kMaxHintsHeld ? kMaxHintsHeld : remaining;
+  }
+
+  bool get canHint => availableHints > 0 && !isWon && !isStuck;
+
   void _generate() {
     final filled = totalBottles - emptyBottles;
     final pool = <Color>[];
@@ -121,9 +147,13 @@ class GameState extends ChangeNotifier {
     selectedIndex = null;
     moves = 0;
     undosUsed = 0;
+    hintsUsed = 0;
     _history.clear();
     lastPourSrc = null;
     lastPourDst = null;
+    hintSrc = null;
+    hintDst = null;
+    _hintTimer?.cancel();
   }
 
   void reset() {
@@ -138,6 +168,10 @@ class GameState extends ChangeNotifier {
   }
 
   String? tapBottle(int index) {
+    // A fresh interaction supersedes any lingering hint highlight.
+    hintSrc = null;
+    hintDst = null;
+    _hintTimer?.cancel();
     if (selectedIndex == null) {
       if (bottles[index].isEmpty) {
         return 'That bottle is empty — pick a source first.';
@@ -179,7 +213,72 @@ class GameState extends ChangeNotifier {
     lastPourSrc = null;
     lastPourDst = null;
     _pourTimer?.cancel();
+    hintSrc = null;
+    hintDst = null;
+    _hintTimer?.cancel();
     notifyListeners();
+  }
+
+  /// Reveals a suggested next move by briefly highlighting a source and
+  /// destination bottle. Does NOT perform the pour. Returns null on success,
+  /// or a message explaining why no hint was given (won / stuck / none left /
+  /// none found). Only consumes a hint once a real move is found.
+  String? useHint() {
+    if (isWon) return 'Puzzle already solved.';
+    if (isStuck) return 'No moves left — try undo or reset.';
+    if (availableHints <= 0) return 'No hints available yet.';
+    final move = _findHint();
+    if (move == null) return 'No helpful move found.';
+    hintsUsed++;
+    _flagHint(move.$1, move.$2);
+    selectedIndex = null; // avoid a confusing double-highlight
+    notifyListeners();
+    return null;
+  }
+
+  /// Picks a constructive pour to suggest. Prefers consolidating a color onto
+  /// a matching non-empty bottle, then pouring into an empty bottle, and falls
+  /// back to any legal pour. Returns null only when no legal pour exists.
+  (int, int)? _findHint() {
+    (int, int)? best;
+    int bestRank = 0;
+    for (int i = 0; i < bottles.length; i++) {
+      final src = bottles[i];
+      if (src.isEmpty || src.isSolved) continue;
+      for (int j = 0; j < bottles.length; j++) {
+        if (i == j) continue;
+        final dst = bottles[j];
+        if (_validatePour(src, dst) != null) continue;
+        // Wasteful: relocating a whole mono-color bottle into an empty one.
+        final wasteful = dst.isEmpty && src.topRunLength == src.units.length;
+        final int rank;
+        if (!dst.isEmpty && dst.topColor == src.topColor) {
+          rank = 2; // consolidates a color
+        } else if (dst.isEmpty && !wasteful) {
+          rank = 1; // frees the source top into an empty bottle
+        } else {
+          rank = wasteful ? 0 : 1;
+        }
+        if (rank > bestRank || best == null) {
+          bestRank = rank;
+          best = (i, j);
+          // The whole top run fits and consolidates: can't do better.
+          if (rank == 2 && dst.freeSpace >= src.topRunLength) return best;
+        }
+      }
+    }
+    return best;
+  }
+
+  void _flagHint(int srcIdx, int dstIdx) {
+    hintSrc = srcIdx;
+    hintDst = dstIdx;
+    _hintTimer?.cancel();
+    _hintTimer = Timer(const Duration(milliseconds: 1500), () {
+      hintSrc = null;
+      hintDst = null;
+      notifyListeners();
+    });
   }
 
   String? _validatePour(Bottle src, Bottle dst) {
@@ -225,6 +324,7 @@ class GameState extends ChangeNotifier {
   @override
   void dispose() {
     _pourTimer?.cancel();
+    _hintTimer?.cancel();
     super.dispose();
   }
 }
