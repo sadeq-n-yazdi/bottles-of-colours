@@ -99,17 +99,17 @@ void main() {
       expect(g.isStuck, true);
     });
 
-    test('undo earns 1 per 10 moves, capped at 3', () {
+    test('undo earns 1 per 3 moves, capped at 3', () {
       final g = GameState(totalBottles: 5, seed: 1);
       expect(g.availableUndos, 0);
       g.bottles[0] = Bottle(const [Colors.red, Colors.red], capacity: 5);
       g.bottles[1] = Bottle.empty(capacity: 5);
       // Force-bump moves to test the formula independent of pour mechanics.
-      g.moves = 9;
+      g.moves = 2;
       expect(g.availableUndos, 0);
-      g.moves = 10;
+      g.moves = 3;
       expect(g.availableUndos, 1);
-      g.moves = 35;
+      g.moves = 9;
       expect(g.availableUndos, 3); // capped
       g.moves = 100;
       expect(g.availableUndos, 3); // still capped
@@ -125,12 +125,65 @@ void main() {
       expect(g.bottles[0].units, isEmpty);
       expect(g.bottles[1].units.length, 3);
       // Player has 1 move; grant an undo.
-      g.moves = 10;
+      g.moves = 3;
       expect(g.canUndo, true);
       g.undo();
       expect(g.bottles[0].units.length, 3);
       expect(g.bottles[1].units, isEmpty);
       expect(g.undosUsed, 1);
+    });
+
+    test('hints start at 1, earn 1 per 5 moves, capped at 3', () {
+      final g = GameState(totalBottles: 5, seed: 1);
+      expect(g.availableHints, 1); // free hint before any move
+      g.moves = 4;
+      expect(g.availableHints, 1);
+      g.moves = 5;
+      expect(g.availableHints, 2);
+      g.moves = 15;
+      expect(g.availableHints, 3); // 1 free + 3 earned, capped
+      g.moves = 100;
+      expect(g.availableHints, 3); // still capped
+    });
+
+    test('useHint suggests a valid pour and consumes one hint', () {
+      final g = GameState(totalBottles: 5, seed: 1);
+      // A clean, obvious consolidation: red-topped source onto red-topped dst.
+      g.bottles[0] = Bottle(const [Colors.blue, Colors.red], capacity: 5);
+      g.bottles[1] = Bottle(const [Colors.red], capacity: 5);
+      final err = g.useHint();
+      expect(err, isNull);
+      expect(g.hintSrc, 0);
+      expect(g.hintDst, 1);
+      expect(g.hintsUsed, 1);
+      expect(g.availableHints, 0); // spent the single free hint
+    });
+
+    test('useHint refuses and does not consume when already won', () {
+      final g = GameState(totalBottles: 5, seed: 1);
+      g.bottles = [
+        Bottle(List<Color>.filled(5, Colors.red), capacity: 5),
+        Bottle(List<Color>.filled(5, Colors.blue), capacity: 5),
+        Bottle(List<Color>.filled(5, Colors.green), capacity: 5),
+        Bottle.empty(capacity: 5),
+        Bottle.empty(capacity: 5),
+      ];
+      expect(g.isWon, true);
+      final err = g.useHint();
+      expect(err, isNotNull);
+      expect(g.hintsUsed, 0);
+      expect(g.hintSrc, isNull);
+    });
+
+    test('a tap clears a pending hint highlight', () {
+      final g = GameState(totalBottles: 5, seed: 1);
+      g.bottles[0] = Bottle(const [Colors.blue, Colors.red], capacity: 5);
+      g.bottles[1] = Bottle(const [Colors.red], capacity: 5);
+      g.useHint();
+      expect(g.hintSrc, isNotNull);
+      g.tapBottle(0); // select bottle 0
+      expect(g.hintSrc, isNull);
+      expect(g.hintDst, isNull);
     });
   });
 }
